@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Vaporware</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<script>
+		function execute(func, setting) {
+			var xmlhttp = new XMLHttpRequest();
+	        xmlhttp.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {
+	                document.getElementById("txtSuccess").innerHTML = this.responseText;
+	            }
+	        };
+	        
+	        var speed = document.getElementById("ddlSpeed");
+	        var force = document.getElementById("chkForce");
+	        
+	        var opt = "";
+	        
+	        if(func == "TurnOn" || func == "RunFan" || func == "RunLast") {
+	        	opt = speed.options[speed.selectedIndex].value;
+	        }
+	        else if (func == "SetPower" || func == "SetAudio") {
+		        opt = force.checked;
+	        }
+	        
+	        var params = func + "=" + opt + setting;
+	        xmlhttp.open("POST", "classes/post.php", true);
+			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	        xmlhttp.send(params);
+		}
+		</script>
+	</head>
+	<body>
+		<div id="container">
+			<header id="site-header">
+				<span>Vaporware</span>
+			</header>
+			<main>
+				<section>
+					<select id="ddlSpeed">
+						<option value="3">Fast</option>
+						<option value="2">Medium</option>
+						<option value="1">Slow</option>
+					</select>
+					<button onclick="execute('TurnOn', '|200')">On</button>
+					<button onclick="execute('RunFan', '')">Refill</button>
+					<button onclick="execute('RunLast', '')">Last</button>
+					<button onclick="execute('AddTime', '10')">+10</button>
+					<button onclick="execute('StopFan', '1')">Stop</button>
+				</section>
+				<section id="secTools">
+					<h1>⚙️</h1>
+					<button onclick="execute('SetPower', '|1')">Power On</button>
+					<button onclick="execute('SetPower', '|0')">Power Off</button>
+					<button onclick="execute('SetAudio', '|1')">Audio On</button>
+					<button onclick="execute('SetAudio', '|0')">Audio Off</button>
+					<button onclick="execute('SetTemp', '200')">200</button>
+					<button onclick="execute('SetTemp', '210')">210</button>
+					<button onclick="execute('SetTemp', '216')">216</button>
+					<button onclick="execute('SetTemp', '220')">220</button>
+					<label><input type="checkbox" id="chkForce" /> Force</label>
+				</section>
+			</main>
+			<footer>
+				<span id="txtSuccess"></span>
+			</footer>
+		</div>
+	</body>
+</html>
