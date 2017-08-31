@@ -1,0 +1,32 @@
+"accessories": [
+	{
+		"accessory": "Script",
+        	"name": "Vape",
+          	"on": "php-cgi -f /path/to/vaporware/classes/get.php TurnOn=\"3|200\"",
+          	"off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
+          	"state": "sh /path/to/state.sh",
+          	"fileState": "/path/to/script.flag",
+          	"on_value" : "true",
+          	"exact_match": true
+	},
+    {
+            "accessory": "Script",
+            "name": "New Bag",
+            "on": "php-cgi -f /path/to/vaporware/classes/get.php RunFan=3",
+            "off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
+            "state": "sh /path/to/state.sh",
+            "fileState": "/path/to/script.flag",
+            "on_value" : "true",
+            "exact_match": true
+    },
+    {
+            "accessory": "Script",
+            "name": "Last Bag",
+            "on": "php-cgi -f /path/to/vaporware/classes/get.php RunLast=3",
+            "off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
+            "state": "sh /path/to/state.sh",
+            "fileState": "/path/to/script.flag",
+            "on_value" : "true",
+            "exact_match": true
+    }
+]
