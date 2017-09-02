@@ -32,7 +32,7 @@ class Bag {
 		$curTime = 0;
 		$startDateTime = $this->data->GetDateTime();
 		$cleanAge = $this->vape->GetProp("cleanAge");
-		$this->setProp("duration", 120 + ((2 - $speed) * 20) + (0.15 * $cleanAge)); // baseline: 120s clean at speed 2. speed bias 20, cleaning bias 0.15
+		$this->setProp("duration", 120 + ((2 - $speed) * 25) + (0.15 * $cleanAge)); // baseline: 120s clean at speed 2. speed bias 25, cleaning bias 0.15
 		
 		$this->vape->SetFan($speed);
 		$this->setProp("isFilling", 1);
