@@ -1,7 +1,7 @@
 'use strict';
 const db = require('../db');
 const vape = require('../vape');
-const config = require(process.env.HOME + '/config.json');
+const config = require(process.env.HOME + '/vaporware.json');
 const updateConfig = require('../updateConfig');
 
 var lastEndTime = 0; // kept for seeing if new bag is started right after previous bag

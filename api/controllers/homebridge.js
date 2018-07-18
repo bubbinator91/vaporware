@@ -2,7 +2,7 @@
 const db = require('../db');
 const vapeRoute = require('./vape');
 const vape = require('../vape');
-const config = require(process.env.HOME + '/config.json');
+const config = require(process.env.HOME + '/vaporware.json');
 const updateConfig = require('../updateConfig');
 
 exports.doStuff = (req, res) => {

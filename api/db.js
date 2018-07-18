@@ -1,6 +1,6 @@
 'use strict';
 const mysql = require('mysql');
-const config = require(process.env.HOME + '/config.json');
+const config = require(process.env.HOME + '/vaporware.json');
 
 var dbPool = mysql.createPool({
 	connectionLimit: 10,

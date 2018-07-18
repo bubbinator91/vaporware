@@ -24,7 +24,7 @@
 
 3. Place `lircd.conf` in `/etc/lirc`
 
-4. Copy `config-example.json` to `~/config.json` and adjust as needed.
+4. Copy `config-example.json` to `~/vaporware.json` and adjust as needed.
 
 5. (Optional) For Homebridge support, install the `homebridge-http` plugin and add the contents of `homebridge-config-accessories.json` to your Homebridge `config.json`.
 

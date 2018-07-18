@@ -6,7 +6,7 @@ const parser = require('body-parser');
 const app = express();
 const router = express.Router();
 const api = require('./api/routes');
-const config = require(process.env.HOME + '/config.json');
+const config = require(process.env.HOME + '/vaporware.json');
 
 
 // survive CORS
