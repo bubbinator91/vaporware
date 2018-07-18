@@ -27,6 +27,7 @@ exports.doStuff = (req, res) => {
 			} else if (req.query.action == 'fill' && (req.query.value == 0 || req.query.value == 1)) {
 				cmd.body.fanSpeed = config.homeBridgeDefaults.fanSpeed;
 				if (vapeObj.isPowerOn == 0) cmd.body.temp = config.homeBridgeDefaults.temp;
+				else cmd.body.temp = vapeObj.temp;
 				cmd.body.isPowerOn = parseInt(req.query.value);
 				cmd.body.isFilling = 1;
 			} else {
