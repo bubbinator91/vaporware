@@ -1,0 +1,32 @@
+{
+  "alerting": {
+    "audible": false,
+    "visual": true
+  },
+  "fill": {
+    "autoAdjust": true,
+    "baseline": 110,
+    "speedBias": 25,
+    "cleanBias": 3,
+    "timeIncrementSeconds": 10
+  },
+  "sleeps": {
+    "command": 300,
+    "tempCommand": 1000,
+    "heatUp": 180
+  },
+  "homeBridgeDefaults": {
+	"fanSpeed": 3,
+	"temp": 200
+  },
+  "debug": false,
+  "port": 4200,
+  "ir": "arizer",
+  "database": {
+    "enable": true,
+    "host": "localhost",
+    "database": "vaporware",
+    "user": "user",
+    "password": "password"
+  }
+}

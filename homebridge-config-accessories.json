@@ -1,0 +1,23 @@
+// using homebridge-http plugin (https://github.com/rudders/homebridge-http)
+"accessories": [
+    {
+        "accessory": "Http",
+        "name": "Vape",
+        "switchHandling": "realtime",
+        "http_method": "GET",
+        "on_url":      "http://localhost:4200/api/homebridge?action=fill&value=1",
+        "off_url":     "http://localhost:4200/api/homebridge?action=duration&value=0",
+        "status_url":  "http://localhost:4200/api/homebridge?status=1",
+        "service": "Switch"
+    },
+    {
+        "accessory": "Http",
+        "name": "Last Bag",
+        "switchHandling": "realtime",
+        "http_method": "GET",
+        "on_url":      "http://localhost:4200/api/homebridge?action=fill&value=0",
+        "off_url":     "http://localhost:4200/api/homebridge?action=duration&value=0",
+        "status_url":  "http://localhost:4200/api/homebridge?status=0",
+        "service": "Switch"                                                               
+    }
+]

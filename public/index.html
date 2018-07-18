@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Vaporware</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<script>
+		var config = {};
+		var duration = 0;
+		var refreshRate = 3000;
+		
+		/* startup */
+		function start() {
+			getConfig();
+			updateStats();
+			
+			// polling			
+			var refreshCallback = function() {
+				refreshState();
+				
+				setTimeout(refreshCallback, refreshRate);
+			}
+			setTimeout(refreshCallback, refreshRate);
+			
+			setInterval(() => {
+				updateStats();
+			}, 60000);
+		}
+		
+		
+		
+		/* load config */
+		function getConfig() {
+			xhrExecute("GET", "config", "", (responseText) => {
+				config = JSON.parse(responseText);
+				
+				updateTimeButton();
+				updateConfigPage();
+				refreshState();
+			});
+		}
+		
+		function updateTimeButton() {
+			var btnAddTime = document.getElementById("btnAddTime");
+			btnAddTime.innerHTML = "+" + config.fill.timeIncrementSeconds + " seconds";
+		}
+		
+		function updateConfigPage() {
+			document.getElementById("alertAudible").value = config.alerting.audible;
+			document.getElementById("alertVisual").value = config.alerting.visual;
+			document.getElementById("homebridgeFanSpeed").value = config.homeBridgeDefaults.fanSpeed;
+			document.getElementById("homebridgeTemperature").value = config.homeBridgeDefaults.temp;
+			document.getElementById("fillAutoAdjust").value = config.fill.autoAdjust;
+			document.getElementById("fillBaseline").value = config.fill.baseline;
+			document.getElementById("fillSpeedBias").value = config.fill.speedBias;
+			document.getElementById("fillCleaningBias").value = config.fill.cleanBias;
+			document.getElementById("fillAddTimeSeconds").value = config.fill.timeIncrementSeconds;
+			document.getElementById("delaysHeatUp").value = config.sleeps.heatUp;
+			document.getElementById("delaysCommand").value = config.sleeps.command;
+			document.getElementById("delaysTemperatureCommand").value = config.sleeps.tempCommand;
+		}
+		
+		
+		
+		/* interface update functions */
+		function refreshState() {
+			xhrExecute("GET", "vape", "", (responseText) => {
+				var btnPower = document.getElementById("btnPower");
+				var ddlTemp = document.getElementById("ddlTemp");
+				var ddlSpeed = document.getElementById("ddlSpeed");
+				var btnAudio = document.getElementById("btnAudio");
+				var sCleanAge = document.getElementById("sCleanAge");
+				
+				var res = JSON.parse(responseText);
+				
+				if (res.isPowerOn == 1 && btnPower.innerHTML != "On") {
+					btnPower.innerHTML = "On";
+					if (!btnPower.classList.contains('on')) btnPower.classList.add('on');
+				} else if (res.isPowerOn == 0 && btnPower.innerHTML != "Off") {
+					btnPower.innerHTML = "Off";
+					if (btnPower.classList.contains('on')) btnPower.classList.remove('on');
+				}
+				
+				if (res.temp != ddlTemp.value) ddlTemp.value = res.temp;
+				
+				if (res.fanSpeed > 0) {
+					if (!ddlSpeed.classList.contains('on')) ddlSpeed.classList.add('on');
+				
+					if (res.fanSpeed != ddlSpeed.value) ddlSpeed.value = res.fanSpeed;
+				} else {
+					if (ddlSpeed.classList.contains('on')) ddlSpeed.classList.remove('on');
+				}
+				
+				if (res.isAudioOn == 1 && btnAudio.innerHTML != "On") {
+					btnAudio.innerHTML = "On";
+					if (!btnAudio.classList.contains('on')) btnAudio.classList.add('on');
+				} else if (res.isAudioOn == 0 && btnAudio.innerHTML != "Off") {
+					btnAudio.innerHTML = "Off";
+					if (btnAudio.classList.contains('on')) btnAudio.classList.remove('on');
+				}
+				
+				if (res.cleanAge != sCleanAge.innerHTML) sCleanAge.innerHTML = res.cleanAge;
+				
+				if (!isNaN(res.duration)) duration = res.duration;
+				
+				displayProgress(res);
+				updateStatus(res);
+			});
+		}
+		
+		function updateStats() {
+			xhrExecute("GET", "stats", "", (responseText) => {
+				var sAvgBags = document.getElementById("sAvgBags");
+				var sMaxBags = document.getElementById("sMaxBags");
+				var sAvgBowl = document.getElementById("sAvgBowl");
+				var sMaxBowl = document.getElementById("sMaxBowl");
+				var sAvgDay = document.getElementById("sAvgDay");
+				
+				var res = JSON.parse(responseText);
+				var avgBags = res.avgBags.toPrecision(2);
+				var maxBags = res.maxBags.toPrecision(2);
+				var avgBowl = parseSeconds(res.avgBowl);
+				var maxBowl = parseSeconds(res.maxBowl);
+				var avgDay = res.avgDay.toPrecision(2);
+				
+				if (avgBags != sAvgBags.innerHTML) sAvgBags.innerHTML = avgBags;
+				if (maxBags != sMaxBags.innerHTML) sMaxBags.innerHTML = maxBags;
+				if (avgBowl != sAvgBowl.innerHTML) sAvgBowl.innerHTML = avgBowl;
+				if (maxBowl != sMaxBowl.innerHTML) sMaxBowl.innerHTML = maxBowl;
+				if (avgDay != sAvgDay.innerHTML) sAvgDay.innerHTML = avgDay;
+			});
+		}
+		
+		function displayProgress(res) {
+			var progressDiv = document.getElementById("progress");
+			var progressButtonsDiv = document.getElementById("progressButtons");
+			var buttonsMainDiv = document.getElementById("buttonsMain");
+			var buttonsSmallDiv = document.getElementById("buttonsSmall");
+			
+			if (res.isFilling == 1) {
+				refreshRate = 1000;
+				progressDiv.style.display = "block";
+				buttonsMainDiv.style.display = "none";
+				buttonsSmallDiv.style.display = "none";
+				
+				var dispText = "Bag in progress...";
+				var remainText = "";
+				
+				if (res.fanSpeed == 0 && config != {} && (config.sleeps.heatUp - res.durationElapsed > 0)) {
+					progressButtonsDiv.style.display = "none";
+					dispText = "Heating";
+					remainText = (config.sleeps.heatUp - res.durationElapsed) + " seconds remaining";
+				} else if ((res.duration - res.durationElapsed) > 0) {
+					progressButtonsDiv.style.display = "flex";
+					dispText = "Filling Bag";
+					remainText = (res.duration - res.durationElapsed) + " seconds remaining";
+				}
+				
+				document.getElementById("progressText").innerHTML = dispText;
+				document.getElementById("remainingText").innerHTML = remainText;
+			} else {
+				refreshRate = 3000;
+				progressDiv.style.display = "none";
+				buttonsMainDiv.style.display = "flex";
+				buttonsSmallDiv.style.display = "flex";
+			}
+		}
+		
+		function updateStatus(res) {
+			var btnPower = document.getElementById("btnPowerContainer");
+			var ddlTemp = document.getElementById("ddlTempContainer");
+			var ddlSpeed = document.getElementById("ddlSpeedContainer");
+			var btnAudio = document.getElementById("btnAudioContainer");
+			
+			if (res.isPowerOn == 1) {
+				if (res.isFilling == 1) {
+					if (!btnPower.classList.contains('disabled')) btnPower.classList.add('disabled');
+					if (ddlTemp.classList.contains('disabled')) ddlTemp.classList.remove('disabled');
+					if (btnAudio.classList.contains('disabled')) btnAudio.classList.remove('disabled');
+					
+					if (res.fanSpeed == 0) {
+						if (!ddlSpeed.classList.contains('disabled')) ddlSpeed.classList.add('disabled');
+					} else {
+						if (ddlSpeed.classList.contains('disabled')) ddlSpeed.classList.remove('disabled');
+					}
+				} else {
+					if (btnPower.classList.contains('disabled')) btnPower.classList.remove('disabled');
+					if (ddlTemp.classList.contains('disabled')) ddlTemp.classList.remove('disabled');
+					if (ddlSpeed.classList.contains('disabled')) ddlSpeed.classList.remove('disabled');
+					if (btnAudio.classList.contains('disabled')) btnAudio.classList.remove('disabled');
+				}
+			} else {
+				if (btnPower.classList.contains('disabled')) btnPower.classList.remove('disabled');
+				if (!ddlTemp.classList.contains('disabled')) ddlTemp.classList.add('disabled');
+				if (ddlSpeed.classList.contains('disabled')) ddlSpeed.classList.remove('disabled');
+				if (!btnAudio.classList.contains('disabled')) btnAudio.classList.add('disabled');
+			}
+		}
+		
+		
+		
+		/* button click functions */
+		function togglePower() {
+			var btnPower = document.getElementById("btnPower");
+			var turnOn = 0;
+			
+			if (btnPower.innerHTML == "Off") turnOn = 1;
+			
+			var cmd = {
+				isPowerOn: turnOn
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function setTemp() {
+			var ddlTemp = document.getElementById("ddlTemp");
+			
+			var cmd = {
+				temp: ddlTemp.value
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function setSpeed() {
+			var ddlSpeed = document.getElementById("ddlSpeed");
+			
+			var cmd = {
+				fanSpeed: ddlSpeed.value
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function toggleAudio() {
+			var btnAudio = document.getElementById("btnAudio");
+			var turnOn = 0;
+			
+			if (btnAudio.innerHTML == "Off") turnOn = 1;
+			
+			var cmd = {
+				isAudioOn: turnOn
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function vape() {
+			fillBag(1);
+		}
+		
+		function lastBag() {
+			fillBag(0);
+		}
+		
+		function cleaning() {
+			var cmd = {
+				cleanAge: 0
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function doOverride() {
+			var ddlOverride = document.getElementById("ddlOverride");
+			var setting = 0;
+			var cmd = {};
+			
+			if (ddlOverride.value == 1 || ddlOverride.value == 2) {
+				if (ddlOverride.value == 2) setting = 1;
+				cmd = {
+					override: 1,
+					isPowerOn: setting
+				};
+			} else if (ddlOverride.value == 3 || ddlOverride.value == 4) {
+				if (ddlOverride.value == 4) setting = 1;
+				cmd = {
+					override: 1,
+					isAudioOn: setting
+				};
+			}
+			
+			if (ddlOverride.value > 0) executeAndRefresh(cmd);
+			
+			ddlOverride.value = 0;
+		}
+		
+		function addTime() {
+			var cmd = {
+				duration: (duration + config.fill.timeIncrementSeconds)
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function stop() {
+			var cmd = {
+				duration: 0
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		
+		
+		/* config functions */
+		function showConfig() {
+			document.getElementById("vaporware").style.display = "none";
+			document.getElementById("settings").style.display = "block";
+		}
+		
+		function saveConfig() {
+			document.getElementById("vaporware").style.display = "block";
+			document.getElementById("settings").style.display = "none";
+			
+			if (document.getElementById("alertAudible").value != config.alerting.audible) config.alerting.audible = (document.getElementById("alertAudible").value == 'true');
+			if (document.getElementById("alertVisual").value != config.alerting.visual) config.alerting.visual = (document.getElementById("alertVisual").value == 'true');
+			if (document.getElementById("homebridgeFanSpeed").value != config.homeBridgeDefaults.fanSpeed) config.homeBridgeDefaults.fanSpeed = parseInt(document.getElementById("homebridgeFanSpeed").value);
+			if (document.getElementById("homebridgeTemperature").value != config.homeBridgeDefaults.temp) config.homeBridgeDefaults.temp = parseInt(document.getElementById("homebridgeTemperature").value);
+			if (document.getElementById("fillAutoAdjust").value != config.fill.autoAdjust) config.fill.autoAdjust = (document.getElementById("fillAutoAdjust").value == 'true');
+			if (document.getElementById("fillBaseline").value != config.fill.baseline) config.fill.baseline = parseInt(document.getElementById("fillBaseline").value);
+			if (document.getElementById("fillSpeedBias").value != config.fill.speedBias) config.fill.speedBias = parseInt(document.getElementById("fillSpeedBias").value);
+			if (document.getElementById("fillCleaningBias").value != config.fill.cleanBias) config.fill.cleanBias = parseInt(document.getElementById("fillCleaningBias").value);
+			if (document.getElementById("fillAddTimeSeconds").value != config.fill.timeIncrementSeconds) config.fill.timeIncrementSeconds = parseInt(document.getElementById("fillAddTimeSeconds").value);
+			if (document.getElementById("delaysHeatUp").value != config.sleeps.heatUp) config.sleeps.heatUp = parseInt(document.getElementById("delaysHeatUp").value);
+			if (document.getElementById("delaysCommand").value != config.sleeps.command) config.sleeps.command = parseInt(document.getElementById("delaysCommand").value);
+			if (document.getElementById("delaysTemperatureCommand").value != config.sleeps.tempCommand) config.sleeps.tempCommand = parseInt(document.getElementById("delaysTemperatureCommand").value);
+			
+			xhrExecute("PUT", "config", config, (responseText) => {
+				//writeMessage(responseText);
+				updateTimeButton();
+				refreshState();
+			});
+		}
+		
+		
+		
+		/* helper functions */
+		function fillBag(power) {
+			var ddlTemp = document.getElementById("ddlTemp");
+			var ddlSpeed = document.getElementById("ddlSpeed");
+			var cmd = {
+				isFilling: 1,
+				fanSpeed: ddlSpeed.value,
+				temp: ddlTemp.value,
+				isPowerOn: power
+			};
+			
+			executeAndRefresh(cmd);
+		}
+		
+		function executeAndRefresh(cmd) {
+			xhrExecute("PUT", "vape", cmd, (responseText) => {
+				//writeMessage(responseText);
+				refreshState();
+			});
+		}
+		
+		function writeMessage(text) {
+			var json = JSON.parse(text);
+			var footer = document.getElementById("txtSuccess");
+			
+			if(json.hasOwnProperty('message')) footer.innerHTML = json.message;
+			else footer.innerHTML = "";
+		}
+		
+		function parseSeconds(minutesIn) {
+		    var hours = Math.floor(minutesIn / 60);
+		    var minutes = Math.floor(minutesIn - (hours * 60));
+		    var output = "";
+		    
+		    if (hours > 1) output += hours + " hours ";
+		    else if (hours > 0) output += hours + " hour ";
+		    if (minutes > 1) output += minutes + " minutes";
+		    else if (minutes > 0) output += minutes + " minute";
+		    
+		    return output;
+		}
+		
+		function xhrExecute(method, endpoint, body, callback) {
+			var xhr = new XMLHttpRequest();
+			var url = '/api/' + endpoint;
+			
+			xhr.onreadystatechange = function() {
+	            if (this.readyState == 4 && this.status == 200) {
+	                callback(xhr.responseText);
+	            }
+	        };
+	        
+	        xhr.open(method, url);			
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xhr.send(JSON.stringify(body));
+		}
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    start();
+		}, false);
+		</script>
+	</head>
+	<body>
+		<div id="container">
+			<main>
+				<div id="vaporware">
+					<section id="secMainHeader" class="secHeader">
+						<h1>Vaporware</h1>
+						<span><a href="#" onclick="showConfig()">Settings</a></span>
+					</section>
+					<section id="secTop">
+						<div class="iconStatus" id="btnPowerContainer">
+							<p>🔌</p>
+							<button onclick="togglePower()" class="btnStatus" id="btnPower">Off</button>
+						</div>
+						<div class="iconStatus" id="ddlTempContainer">
+							<p>🌡</p>
+							<select onchange="setTemp()" id="ddlTemp" class="btnStatus">
+								<option value="200">200</option>
+								<option value="210">210</option>
+								<option value="216">216</option>
+								<option value="220">220</option>
+								<option value="230">230</option>
+							</select>
+						</div>
+						<div class="iconStatus" id="ddlSpeedContainer">
+							<p>🌀</p>
+							<select onchange="setSpeed()" id="ddlSpeed" class="btnStatus">
+								<option value="3">Fast</option>
+								<option value="2">Med</option>
+								<option value="1">Slow</option>
+							</select>
+						</div>
+						<div class="iconStatus" id="btnAudioContainer">
+							<p>🔈</p>
+							<button onclick="toggleAudio()" class="btnStatus" id="btnAudio">Off</button>
+						</div>
+					</section>
+					<section id="secActions">
+						<div id="buttonsMain">
+							<button onclick="vape()" class="primary">Vape</button>
+							<button onclick="lastBag()">Last Bag</button>
+						</div>
+						<div id="buttonsSmall">
+							<button onclick="cleaning()" class="small">Cleaning</button>
+							<select onchange="doOverride()" class="small" id="ddlOverride">
+								<option value="0">Override</option>
+								<option value="1">Power Off</option>
+								<option value="2">Power On</option>
+								<option value="3">Audio Off</option>
+								<option value="4">Audio On</option>
+							</select>
+						</div>
+						<div id="progress" style="display:none">
+							<div id="progressText"></div>
+							<div id="remainingText"></div>
+							<div id="progressButtons">
+								<button onclick="addTime()" id="btnAddTime">+10 seconds</button>
+								<button onclick="stop()">Stop Early</button>
+							</div>
+						</div>
+					</section>
+					<section id="secStats">
+						<h1>Stats for Nerds</h1>
+						<div class="statsRow">
+							<span class="rowTitle">Bags since last cleaning</span>
+							<span class="rowValue" id="sCleanAge"></span>
+						</div>
+						<div class="statsRow">
+							<span class="rowTitle">Average bags per bowl</span>
+							<span class="rowValue" id="sAvgBags"></span>
+						</div>
+						<div class="statsRow">
+							<span class="rowTitle">Most bags in a bowl</span>
+							<span class="rowValue" id="sMaxBags"></span>
+						</div>
+						<div class="statsRow">
+							<span class="rowTitle">Average bowl length</span>
+							<span class="rowValue" id="sAvgBowl"></span>
+						</div>
+						<div class="statsRow">
+							<span class="rowTitle">Longest bowl</span>
+							<span class="rowValue" id="sMaxBowl"></span>
+						</div>
+						<div class="statsRow">
+							<span class="rowTitle">Average bowls per day</span>
+							<span class="rowValue" id="sAvgDay"></span>
+						</div>
+					</section>
+				</div>
+				<div id="settings" style="display:none">
+					<section id="secConfigHeader" class="secHeader">
+						<h1>Settings</h1>
+						<span class="primary"><a href="#" onclick="saveConfig()">Done</a></span>
+					</section>
+					<section id="secConfig">
+						<div class="configSection">
+							<h2>Alert When Bag Done</h2>
+							<div class="configRow">
+								<label>Audible</label>
+								<input type="text" id="alertAudible" />
+							</div>
+							<div class="configRow">
+								<label>Visual</label>
+								<input type="text" id="alertVisual" />
+							</div>
+						</div>
+						<div class="configSection">
+							<h2>Homebridge Defaults</h2>
+							<div class="configRow">
+								<label>Fan speed</label>
+								<input type="text" id="homebridgeFanSpeed" />
+							</div>
+							<div class="configRow">
+								<label>Temperature</label>
+								<input type="text" id="homebridgeTemperature" />
+							</div>
+						</div>
+						<div class="configSection">
+							<h2>Fill Speed</h2>
+							<div class="configRow">
+								<label>Auto adjust</label>
+								<input type="text" id="fillAutoAdjust" />
+							</div>
+							<div class="configRow">
+								<label>Baseline</label>
+								<input type="text" id="fillBaseline" />
+							</div>
+							<div class="configRow">
+								<label>Speed bias</label>
+								<input type="text" id="fillSpeedBias" />
+							</div>
+							<div class="configRow">
+								<label>Cleaning bias</label>
+								<input type="text" id="fillCleaningBias" />
+							</div>
+							<div class="configRow">
+								<label>'Add Time' seconds</label>
+								<input type="text" id="fillAddTimeSeconds" />
+							</div>
+						</div>
+						<div class="configSection">
+							<h2>Delays</h2>
+							<div class="configRow">
+								<label>Heat up</label>
+								<input type="text" id="delaysHeatUp" />
+							</div>
+							<div class="configRow">
+								<label>Command</label>
+								<input type="text" id="delaysCommand" />
+							</div>
+							<div class="configRow">
+								<label>Temperature command</label>
+								<input type="text" id="delaysTemperatureCommand" />
+							</div>
+						</div>
+					</section>
+				</div>
+			</main>
+			<footer>
+				<span id="txtSuccess"></span>
+			</footer>
+		</div>
+	</body>
+</html>
