@@ -2,6 +2,7 @@
 config.json
 
 # naughty macos
+.DS_Store
 ._*
 
 # Logs
