@@ -1,7 +1,7 @@
 'use strict';
 const db = require('./db');
 const runner = require('./runner');
-const config = require('../config.json');
+const config = require(process.env.HOME + '/config.json');
 
 var cache = {
 	isPowerOn: 0,

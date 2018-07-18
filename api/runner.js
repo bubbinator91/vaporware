@@ -1,6 +1,6 @@
 'use strict';
 const { exec } = require('child_process');
-const config = require('../config.json');
+const config = require(process.env.HOME + '/config.json');
 var queue = [];
 var ready = true;
 

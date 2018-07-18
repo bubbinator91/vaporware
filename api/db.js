@@ -1,6 +1,6 @@
 'use strict';
 const mysql = require('mysql');
-const config = require('../config.json');
+const config = require(process.env.HOME + '/config.json');
 
 var dbPool = mysql.createPool({
 	connectionLimit: 10,

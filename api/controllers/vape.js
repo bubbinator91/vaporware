@@ -1,7 +1,7 @@
 'use strict';
 const db = require('../db');
 const vape = require('../vape');
-const config = require('../../config.json');
+const config = require(process.env.HOME + '/config.json');
 const updateConfig = require('../updateConfig');
 
 var lastEndTime = 0; // kept for seeing if new bag is started right after previous bag
@@ -186,9 +186,6 @@ function startVape(setting, vapeObj) {
 			// get end datetime for database
 			var endDbDateTime = db.getDbDateTime();
 			
-			// write bag to database
-			if (config.database.enable) db.writeBag(startDbDateTime, endDbDateTime);
-			
 			// if last bag, turn off power
 			if (vapeObj.isLastBag == 1) vapeObj.isPowerOn = 0;
 			
@@ -202,10 +199,14 @@ function startVape(setting, vapeObj) {
 				if (bagGap <= 10 && bagGap >= 0) {
 					// this bag started <= 10sec after the previous bag ended. Add this bag's duration to the baseline if it was a short bag.
 					// (we probably stopped too early previous bag)
+					// skip writing to db
 					diff = vapeObj.durationElapsed;
 					
 					if (config.debug) console.log(`Appending total bag time of ${diff} to baseline`)
 				} else {
+					// write bag to database
+					if (config.database.enable) db.writeBag(startDbDateTime, endDbDateTime);
+					
 					// get difference between actual vs expected bag time
 					var diff = vapeObj.durationElapsed - vapeCopy.duration;
 					
@@ -219,6 +220,9 @@ function startVape(setting, vapeObj) {
 					
 					if (config.debug) console.log(`Updated config with new baseline ${config.fill.baseline}`);
 				}
+			} else {
+				// write bag to database
+				if (config.database.enable) db.writeBag(startDbDateTime, endDbDateTime);
 			}
 			
 			// set end time for feedback

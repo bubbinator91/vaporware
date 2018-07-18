@@ -1,7 +1,7 @@
 'use strict';
 const db = require('../db');
 const vape = require('../vape');
-const config = require('../../config.json');
+const config = require(process.env.HOME + '/config.json');
 
 exports.getStatistics = (req, res) => {
 	if (config.database.enable) {

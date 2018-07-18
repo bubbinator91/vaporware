@@ -1,6 +1,6 @@
 {
   "name": "vaporware-ir",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "An automated front-end and REST API for controlling popular IR desktop vaporizers via LIRC, written in NodeJS and Express.",
   "main": "index.js",
   "repository": {

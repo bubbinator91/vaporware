@@ -1,5 +1,5 @@
 'use strict';
-const config = require('../../config.json');
+const config = require(process.env.HOME + '/config.json');
 const updateConfig = require('../updateConfig');
 
 exports.getConfig = (req, res) => {
