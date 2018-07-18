@@ -1,32 +1,23 @@
+// using homebridge-http plugin (https://github.com/rudders/homebridge-http)
 "accessories": [
-	{
-		"accessory": "Script",
-        	"name": "Vape",
-          	"on": "php-cgi -f /path/to/vaporware/classes/get.php TurnOn=\"3|200\"",
-          	"off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
-          	"state": "sh /path/to/state.sh",
-          	"fileState": "/path/to/script.flag",
-          	"on_value" : "true",
-          	"exact_match": true
-	},
     {
-            "accessory": "Script",
-            "name": "New Bag",
-            "on": "php-cgi -f /path/to/vaporware/classes/get.php RunFan=3",
-            "off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
-            "state": "sh /path/to/state.sh",
-            "fileState": "/path/to/script.flag",
-            "on_value" : "true",
-            "exact_match": true
+        "accessory": "Http",
+        "name": "Vape",
+        "switchHandling": "realtime",
+        "http_method": "GET",
+        "on_url":      "http://localhost:4200/api/homebridge?action=fill&value=1",
+        "off_url":     "http://localhost:4200/api/homebridge?action=duration&value=0",
+        "status_url":  "http://localhost:4200/api/homebridge?status=1",
+        "service": "Switch"
     },
     {
-            "accessory": "Script",
-            "name": "Last Bag",
-            "on": "php-cgi -f /path/to/vaporware/classes/get.php RunLast=3",
-            "off": "php-cgi -f /path/to/vaporware/classes/get.php StopFan=1",
-            "state": "sh /path/to/state.sh",
-            "fileState": "/path/to/script.flag",
-            "on_value" : "true",
-            "exact_match": true
+        "accessory": "Http",
+        "name": "Last Bag",
+        "switchHandling": "realtime",
+        "http_method": "GET",
+        "on_url":      "http://localhost:4200/api/homebridge?action=fill&value=0",
+        "off_url":     "http://localhost:4200/api/homebridge?action=duration&value=0",
+        "status_url":  "http://localhost:4200/api/homebridge?status=0",
+        "service": "Switch"                                                               
     }
 ]

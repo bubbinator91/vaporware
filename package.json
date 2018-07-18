@@ -1,0 +1,25 @@
+{
+  "name": "vaporware-ir",
+  "version": "3.0.0",
+  "description": "An automated front-end and REST API for controlling popular IR desktop vaporizers via LIRC, written in NodeJS and Express.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dremin/vaporware.git"
+  },
+  "author": "Sam Johnson <npm@scj.me> (http://scj.me)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dremin/vaporware/issues"
+  },
+  "homepage": "https://github.com/dremin/vaporware#readme",
+  "engines": {
+    "node": ">=6.11.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "mysql": "^2.15.0"
+  }
+}
