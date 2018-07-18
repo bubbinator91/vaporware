@@ -18,7 +18,7 @@
 
 ## Installation
 
-1. `npm install vaporware-ir` on your LIRC server.
+1. `npm install -g vaporware-ir` on your LIRC server.
 
 2. Execute `vaporware.sql` within your MySQL or MariaDB instance to create the Vaporware database.
 
