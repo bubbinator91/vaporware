@@ -26,7 +26,8 @@ exports.setVape = (req, res) => {
 		(setting.hasOwnProperty('temp') && !(setting.temp >= 50 && setting.temp <= 260)) || 
 		(setting.hasOwnProperty('duration') && !(setting.duration >= 0 && setting.duration <= 300)) || 
 		(setting.hasOwnProperty('durationElapsed') && !(setting.durationElapsed >= 0 && setting.durationElapsed <= 300)) || 
-		(setting.hasOwnProperty('isFilling') && !(setting.isFilling == 0 || setting.isFilling == 1))) {
+		(setting.hasOwnProperty('isFilling') && !(setting.isFilling == 0 || setting.isFilling == 1)) || 
+		(setting.hasOwnProperty('cleanAge') && !(setting.cleanAge >= 0))) {
 			res.json({ message: 'Validation error' });
 			return;
 		}
@@ -89,15 +90,18 @@ exports.setVape = (req, res) => {
 			// just changing settings
 			// only allow changes if power is on or turning on
 			// unless override is true, then perform special logic
+			if (setting.hasOwnProperty('cleanAge'))
+				vapeObj.cleanAge = parseInt(setting.cleanAge);
+			
 			if (setting.hasOwnProperty('override') && setting.override == 1) {
 				// do special logic for the properties being changed
 				// ignore other properties
 				
 				if (setting.hasOwnProperty('isPowerOn'))
-					vapeObj.setPower(setting.isPowerOn, true);
+					vapeObj.setPower(parseInt(setting.isPowerOn), true);
 					
 				if (setting.hasOwnProperty('isAudioOn'))
-					vapeObj.setAudio(setting.isAudioOn, true);
+					vapeObj.setAudio(parseInt(setting.isAudioOn), true);
 			}
 			else if (vapeObj.isPowerOn == 1 || (setting.hasOwnProperty('isPowerOn') && setting.isPowerOn == 1)) {
 				// do the needful
@@ -106,32 +110,32 @@ exports.setVape = (req, res) => {
 					// power is either not being changed, or is being turned on
 					
 					if (vapeObj.isFilling == 0 && setting.hasOwnProperty('isPowerOn')) // don't allow changing power if we're filling
-						vapeObj.isPowerOn = setting.isPowerOn;
+						vapeObj.isPowerOn = parseInt(setting.isPowerOn);
 						
 					if (setting.hasOwnProperty('isAudioOn'))
-						vapeObj.isAudioOn = setting.isAudioOn;
+						vapeObj.isAudioOn = parseInt(setting.isAudioOn);
 						
 					if (setting.hasOwnProperty('temp'))
-						vapeObj.temp = setting.temp;
+						vapeObj.temp = parseInt(setting.temp);
 					
 					if (vapeObj.isFilling == 1) {
 						// these settings only valid if bag is already filling
 						
 						if (setting.hasOwnProperty('fanSpeed') && vapeObj.fanSpeed > 0) // only adjust fan speed if it's actually on
-							vapeObj.fanSpeed = setting.fanSpeed;
+							vapeObj.fanSpeed = parseInt(setting.fanSpeed);
 							
 						if (setting.hasOwnProperty('duration'))
-							vapeObj.duration = setting.duration;
+							vapeObj.duration = parseInt(setting.duration);
 							
 						if (setting.hasOwnProperty('durationElapsed'))
-							vapeObj.durationElapsed = setting.durationElapsed;
+							vapeObj.durationElapsed = parseInt(setting.durationElapsed);
 					}
 				}
 				else if (!(setting.hasOwnProperty('isFilling') && setting.isFilling == 1) && !vapeObj.isFilling) {
 					// power is being turned off, so ignore other settings
 					// only turn off if we aren't being told to start filling a bag (then do nothing, because we must be in the process of filling a bag and were just told to start a last bag, can't start a bag that's already going!)
 					
-					vapeObj.isPowerOn = setting.isPowerOn;
+					vapeObj.isPowerOn = parseInt(setting.isPowerOn);
 				}
 			}
 					
@@ -149,7 +153,7 @@ function startVape(setting, vapeObj) {
 	var startDateTime = Date.now();
 	
 	// set fan
-	vapeObj.fanSpeed = setting.fanSpeed;
+	vapeObj.fanSpeed = parseInt(setting.fanSpeed);
 	
 	// calculate duration
 	vapeObj.duration = Math.ceil(config.fill.baseline + ((2 - vapeObj.fanSpeed) * config.fill.speedBias) + (config.fill.cleanBias * Math.log(vapeObj.cleanAge + 1)));

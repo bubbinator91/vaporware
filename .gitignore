@@ -1,6 +1,9 @@
 # config
 config.json
 
+# naughty macos
+._*
+
 # Logs
 logs
 *.log

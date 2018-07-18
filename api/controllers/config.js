@@ -23,21 +23,21 @@ exports.setConfig = (req, res) => {
 	
 	if (setting.hasOwnProperty('fill')) {
 		if (setting.fill.hasOwnProperty('autoAdjust')) config.fill.autoAdjust = setting.fill.autoAdjust;
-		if (setting.fill.hasOwnProperty('baseline')) config.fill.baseline = setting.fill.baseline;
-		if (setting.fill.hasOwnProperty('speedBias')) config.fill.speedBias = setting.fill.speedBias;
-		if (setting.fill.hasOwnProperty('cleanBias')) config.fill.cleanBias = setting.fill.cleanBias;
-		if (setting.fill.hasOwnProperty('timeIncrementSeconds')) config.fill.timeIncrementSeconds = setting.fill.timeIncrementSeconds;
+		if (setting.fill.hasOwnProperty('baseline')) config.fill.baseline = parseInt(setting.fill.baseline);
+		if (setting.fill.hasOwnProperty('speedBias')) config.fill.speedBias = parseInt(setting.fill.speedBias);
+		if (setting.fill.hasOwnProperty('cleanBias')) config.fill.cleanBias = parseInt(setting.fill.cleanBias);
+		if (setting.fill.hasOwnProperty('timeIncrementSeconds')) config.fill.timeIncrementSeconds = parseInt(setting.fill.timeIncrementSeconds);
 	}
 	
 	if (setting.hasOwnProperty('sleeps')) {
-		if (setting.sleeps.hasOwnProperty('command')) config.sleeps.command = setting.sleeps.command;
-		if (setting.sleeps.hasOwnProperty('tempCommand')) config.sleeps.tempCommand = setting.sleeps.tempCommand;
-		if (setting.sleeps.hasOwnProperty('heatUp')) config.sleeps.heatUp = setting.sleeps.heatUp;
+		if (setting.sleeps.hasOwnProperty('command')) config.sleeps.command = parseInt(setting.sleeps.command);
+		if (setting.sleeps.hasOwnProperty('tempCommand')) config.sleeps.tempCommand = parseInt(setting.sleeps.tempCommand);
+		if (setting.sleeps.hasOwnProperty('heatUp')) config.sleeps.heatUp = parseInt(setting.sleeps.heatUp);
 	}
 	
 	if (setting.hasOwnProperty('homeBridgeDefaults')) {
-		if (setting.homeBridgeDefaults.hasOwnProperty('fanSpeed')) config.homeBridgeDefaults.fanSpeed = setting.homeBridgeDefaults.fanSpeed;
-		if (setting.homeBridgeDefaults.hasOwnProperty('temp')) config.homeBridgeDefaults.temp = setting.homeBridgeDefaults.temp;
+		if (setting.homeBridgeDefaults.hasOwnProperty('fanSpeed')) config.homeBridgeDefaults.fanSpeed = parseInt(setting.homeBridgeDefaults.fanSpeed);
+		if (setting.homeBridgeDefaults.hasOwnProperty('temp')) config.homeBridgeDefaults.temp = parseInt(setting.homeBridgeDefaults.temp);
 	}
 	
 	updateConfig.write();
