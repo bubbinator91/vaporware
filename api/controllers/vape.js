@@ -208,7 +208,7 @@ function startVape(setting, vapeObj) {
 					if (config.database.enable) db.writeBag(startDbDateTime, endDbDateTime);
 					
 					// get difference between actual vs expected bag time
-					var diff = (vapeObj.durationElapsed - vapeCopy.duration) / 3;
+					var diff = Math.ceil((vapeObj.durationElapsed - vapeCopy.duration) / 3);
 					
 					if (config.debug) console.log(`Baseline/3 difference: ${diff}`);
 				}
