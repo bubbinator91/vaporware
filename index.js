@@ -7,6 +7,7 @@ const app = express();
 const router = express.Router();
 const api = require('./api/routes');
 const config = require(process.env.HOME + '/vaporware.json');
+const slackbot = require('./slackbot');
 
 
 // survive CORS
@@ -25,6 +26,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // set up api router
 app.use('/api', router);
 api(router);
+
+
+// start slackbot if enabled
+slackbot.start();
 
 
 // listen on given port

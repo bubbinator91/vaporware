@@ -3,6 +3,7 @@ const db = require('../db');
 const vape = require('../vape');
 const config = require(process.env.HOME + '/vaporware.json');
 const updateConfig = require('../updateConfig');
+const slackbot = require('../../slackbot')
 
 var lastEndTime = 0; // kept for seeing if new bag is started right after previous bag
 
@@ -59,6 +60,8 @@ exports.setVape = (req, res) => {
 					vapeObj.isLastBag = 0;
 				
 				if (starting) {
+					slackbot.postMessage('Heating up.');
+					
 					// reset durationElapsed to 0
 					vapeObj.durationElapsed = 0;
 					
@@ -145,6 +148,8 @@ exports.setVape = (req, res) => {
 };
 
 function startVape(setting, vapeObj) {
+	slackbot.postMessage('Starting bag.');
+	
 	// reset durationElapsed to 0
 	vapeObj.durationElapsed = 0;
 	
@@ -179,6 +184,9 @@ function startVape(setting, vapeObj) {
 			
 			// increase cleaning age
 			vapeObj.makeDirtier();
+			
+			// post message if enabled
+			slackbot.postMessage('Bag is ready! Enjoy.');
 			
 			// beep
 			vapeObj.alert();

@@ -28,5 +28,11 @@
     "database": "vaporware",
     "user": "user",
     "password": "password"
+  },
+  "slackbot": {
+    "enable": false,
+    "apiToken": "",
+    "channelId": "",
+    "allowedMembers": [ "" ]
   }
 }
