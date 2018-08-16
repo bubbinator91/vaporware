@@ -9,7 +9,6 @@ exports.start = () => {
 		rtm.start();
 		
 		rtm.on('authenticated', onAuthenticated);
-		rtm.on('ready', onConnected);
 		rtm.on('message', onMessage);
 	}
 };
@@ -26,10 +25,6 @@ exports.postMessage = (message) => {
 
 function onAuthenticated(rtmStartData) {
 	if (config.debug) console.log(`Slackbot logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}`);
-}
-
-function onConnected() {
-	if (config.debug) module.exports.postMessage('Vaporware is running.');
 }
 
 function onMessage(message) {
