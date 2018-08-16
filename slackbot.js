@@ -29,7 +29,7 @@ function onAuthenticated(rtmStartData) {
 }
 
 function onConnected() {
-	module.exports.postMessage('Vaporware is running.');
+	if (config.debug) module.exports.postMessage('Vaporware is running.');
 }
 
 function onMessage(message) {
