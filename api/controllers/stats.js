@@ -5,20 +5,22 @@ const config = require(process.env.HOME + '/vaporware.json');
 
 exports.getStatistics = (req, res) => {
 	if (config.database.enable) {
+		var avgBags, maxBags, avgBowl, maxBowl, avgDay;
+		
 		db.query('select avg(a.cnt) value from (select count(id) cnt from bags group by sessionId) a').then((valueAvgBags) => {
-			var avgBags = valueAvgBags[0].value;
+			if (valueAvgBags.length > 0) avgBags = valueAvgBags[0].value;
 			
 			db.query('select max(a.cnt) value from (select count(id) cnt from bags group by sessionId) a').then((valueMaxBags) => {
-				var maxBags = valueMaxBags[0].value;
+				if (valueMaxBags.length > 0) maxBags = valueMaxBags[0].value;
 				
 				db.query('select avg(timestampdiff(minute, start, end)) value from sessions where 0 < timestampdiff(minute, start, end) < 1000').then((valueAvgBowl) => {
-					var avgBowl = valueAvgBowl[0].value;
+					if (valueAvgBowl.length > 0) avgBowl = valueAvgBowl[0].value;
 					
 					db.query('select max(timestampdiff(minute, start, end)) value from sessions where timestampdiff(minute, start, end) < 1000').then((valueMaxBowl) => {
-						var maxBowl = valueMaxBowl[0].value;
+						if (valueMaxBowl.length > 0) maxBowl = valueMaxBowl[0].value;
 						
 						db.query('select avg(cnt) value from (select count(id) cnt from sessions group by date(start)) a').then((valueAvgDay) => {
-							var avgDay = valueAvgDay[0].value;
+							if (valueAvgDay.length > 0) avgDay = valueAvgDay[0].value;
 							
 							res.json({
 								"avgBags": avgBags,

@@ -9,6 +9,7 @@ const api = require('./api/routes');
 const config = require(process.env.HOME + '/vaporware.json');
 const slackbot = require('./slackbot');
 
+if (config.debug) process.on('unhandledRejection', r => console.log(r));
 
 // survive CORS
 app.use(cors());
